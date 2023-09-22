@@ -1,30 +1,54 @@
-const { Fragment } = React;
+import React, { Fragment, useState } from 'react';
+import ReactDOM from 'react-dom';
+import './styles.css';
 
-
-// Implement a feature to allow item selection with the following requirements:
-// 1. Clicking an item selects/unselects it.
-// 2. Multiple items can be selected at a time.
-// 3. Make sure to avoid unnecessary re-renders of each list item in the big list (performance).
-// 4. Currently selected items should be visually highlighted.
-// 5. Currently selected items' names should be shown at the top of the page.
-//
-// Feel free to change the component structure at will.
-
-const List = ({ items }) => (
+const List = React.memo(({ items, selectedItems, toggleItem }) => (
   <Fragment>
     <ul className="List">
-      {items.map(item => (
-        <li key={item.name} className={`List__item List__item--${item.color}`}>
-          {item.name}
-        </li>
+      {items.map((item) => (
+        <ListItem
+          key={item.name}
+          item={item}
+          isSelected={selectedItems.includes(item.name)}
+          onClick={() => toggleItem(item.name)}
+        />
       ))}
     </ul>
   </Fragment>
-);
+));
 
-// ---------------------------------------
-// Do NOT change anything below this line.
-// ---------------------------------------
+const ListItem = React.memo(({ item, isSelected, onClick }) => (
+  <li
+    className={`List__item List__item--${item.color} ${isSelected ? 'selected' : ''}`}
+    onClick={onClick}
+  >
+    {item.name}
+  </li>
+));
+
+const App = () => {
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  const toggleItem = (itemName) => {
+    setSelectedItems((prevSelectedItems) =>
+      prevSelectedItems.includes(itemName)
+        ? prevSelectedItems.filter((item) => item !== itemName)
+        : [...prevSelectedItems, itemName]
+    );
+  };
+
+  const selectedNames = selectedItems.map((itemName) =>
+    items.find((item) => item.name === itemName)?.name
+  );
+
+  return (
+    <div>
+      <h2>Selected Items:</h2>
+      <div>{selectedNames.join(', ')}</div>
+      <List items={items} selectedItems={selectedItems} toggleItem={toggleItem} />
+    </div>
+  );
+};
 
 const sizes = ['tiny', 'small', 'medium', 'large', 'huge'];
 const colors = ['navy', 'blue', 'aqua', 'teal', 'olive', 'green', 'lime', 'yellow', 'orange', 'red', 'maroon', 'fuchsia', 'purple', 'silver', 'gray', 'black'];
@@ -54,6 +78,6 @@ const items = sizes.reduce(
 );
 
 ReactDOM.render(
-  <List items={items}/>,
+  <App />,
   document.getElementById('root')
 );
